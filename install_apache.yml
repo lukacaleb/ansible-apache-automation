@@ -1,0 +1,40 @@
+---
+- name: Install Apache and Configure EC2 Instances
+  hosts: your_ec2_instances
+  become: true
+
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Apache
+      package:
+        name: apache2
+      when: ansible_os_family == 'Debian'
+
+    - name: Start and enable Apache service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: Set time zone to Africa/Lagos
+      timezone:
+        name: Africa/Lagos
+
+    - name: Deploy HTML page
+      template:
+        src: index.html
+        dest: /var/www/html/index.html
+      notify: Restart Apache
+      when: ansible_os_family == 'Debian'
+
+  handlers:
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+      when: ansible_os_family == 'Debian'
